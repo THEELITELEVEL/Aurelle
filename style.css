@@ -1,0 +1,499 @@
+/* ==========================================================================
+   AURELLE — Calibre 01
+   Design system: ink / bone / champagne gold. Editorial serif display with
+   a light grotesque for support. All motion is GSAP-driven (main.js); this
+   sheet covers layout, type, and the few CSS-only animations.
+   ========================================================================== */
+
+:root {
+  --ink:        #0b0b0d;
+  --ink-soft:   #101013;
+  --bone:       #ece7df;
+  --bone-dim:   rgba(236, 231, 223, 0.55);
+  --bone-faint: rgba(236, 231, 223, 0.28);
+  --gold:       #c9a24b;
+  --gold-dim:   rgba(201, 162, 75, 0.55);
+
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-body:    "Inter", "Helvetica Neue", Arial, sans-serif;
+
+  --gutter: clamp(1.5rem, 6vw, 7rem);
+  --rhythm: clamp(6rem, 14vh, 10rem);
+}
+
+/* ---------- Reset ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: auto; /* GSAP manages the experience */
+}
+
+body {
+  background: var(--ink);
+  color: var(--bone);
+  font-family: var(--font-body);
+  font-weight: 300;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+body.is-loading { overflow: hidden; } /* released by the preloader timeline */
+
+/* Hide the native cursor on precise pointers only */
+@media (hover: hover) and (pointer: fine) {
+  body, a, button { cursor: none; }
+}
+
+::selection { background: var(--gold); color: var(--ink); }
+
+/* ==========================================================================
+   PRELOADER
+   ========================================================================== */
+#preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+}
+
+.preloader-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.preloader-brand {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+  letter-spacing: 0.55em;
+  text-indent: 0.55em; /* optically re-centers tracked type */
+  color: var(--bone);
+}
+
+.preloader-count {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 200;
+  letter-spacing: 0.4em;
+  text-indent: 0.4em;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+.preloader-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: rgba(236, 231, 223, 0.08);
+}
+
+.preloader-bar span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+/* ==========================================================================
+   CUSTOM CURSOR  (dot = instant, ring = lerped in main.js render loop)
+   ========================================================================== */
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 90;
+  pointer-events: none;
+  border-radius: 50%;
+  will-change: transform;
+}
+
+.cursor-dot {
+  width: 5px;
+  height: 5px;
+  background: var(--gold);
+  margin: -2.5px 0 0 -2.5px;
+}
+
+.cursor-ring {
+  width: 38px;
+  height: 38px;
+  margin: -19px 0 0 -19px;
+  border: 1px solid var(--gold-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              height 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              margin 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.35s ease,
+              background-color 0.35s ease;
+}
+
+.cursor-ring.is-hover {
+  width: 76px;
+  height: 76px;
+  margin: -38px 0 0 -38px;
+  border-color: var(--gold);
+  background: rgba(201, 162, 75, 0.06);
+}
+
+.cursor-label {
+  font-size: 0.55rem;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.cursor-ring.is-hover .cursor-label { opacity: 1; }
+
+/* No custom cursor on touch devices */
+@media (hover: none), (pointer: coarse) {
+  .cursor-dot, .cursor-ring { display: none; }
+}
+
+/* ==========================================================================
+   CANVAS + ATMOSPHERE LAYERS
+   ========================================================================== */
+#webgl {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+}
+
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center,
+      transparent 0%, transparent 55%, rgba(5, 5, 7, 0.55) 100%);
+}
+
+.grain {
+  position: fixed;
+  inset: -100%;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-shift 0.9s steps(4) infinite;
+}
+
+@keyframes grain-shift {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(-2%, 3%); }
+  50%  { transform: translate(3%, -2%); }
+  75%  { transform: translate(-3%, -3%); }
+  100% { transform: translate(2%, 2%); }
+}
+
+/* ==========================================================================
+   EXPLODED-VIEW CALLOUTS  (positioned per-frame from main.js)
+   ========================================================================== */
+#callouts {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.callout {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  opacity: 0; /* driven by the explosion timeline proxy in main.js */
+  will-change: transform, opacity;
+  white-space: nowrap;
+}
+
+.callout-text {
+  font-size: 0.62rem;
+  font-weight: 300;
+  letter-spacing: 0.32em;
+  text-indent: 0.32em;
+  text-transform: uppercase;
+  color: var(--bone);
+}
+
+.callout-line {
+  width: clamp(28px, 4vw, 64px);
+  height: 1px;
+  background: var(--gold);
+  transform-origin: left center;
+}
+
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.75rem var(--gutter);
+  font-size: 0.62rem;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  text-transform: uppercase;
+  color: var(--bone);
+  mix-blend-mode: difference; /* legible over any canvas state */
+}
+
+.header-brand { font-family: var(--font-display); font-size: 0.95rem; }
+.header-right { color: var(--bone-dim); }
+
+/* ==========================================================================
+   SECTIONS / PANELS
+   ========================================================================== */
+.section {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--gutter);
+}
+
+.section--tall { height: 300vh; align-items: stretch; } /* explosion runway */
+
+.panel { max-width: 34rem; }
+
+.panel--center { margin: 0 auto; text-align: center; }
+.panel--right  { margin-left: auto; text-align: right; }
+.panel--left   { margin-right: auto; text-align: left; }
+
+/* The sticky panel that stays in view during the whole exploded sequence */
+.panel--sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.panel--center .rule { margin-left: auto; margin-right: auto; }
+.panel--right  .rule { margin-left: auto; }
+
+/* ---------- Typography ---------- */
+.section-index {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 200;
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+  color: var(--gold);
+  margin-bottom: 1.1rem;
+}
+
+.eyebrow {
+  font-size: 0.62rem;
+  font-weight: 300;
+  letter-spacing: 0.45em;
+  text-indent: 0.45em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+  margin-bottom: 1.6rem;
+}
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.6rem, 6.2vw, 4.8rem);
+  line-height: 1.06;
+  letter-spacing: 0.015em;
+  color: var(--bone);
+  margin-bottom: 1.8rem;
+}
+
+.display--hero {
+  font-size: clamp(3.2rem, 10vw, 7.5rem);
+}
+
+.display em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--gold);
+}
+
+/* Masked line reveal: .line is the mask, inner span is moved by GSAP */
+.line { display: block; overflow: hidden; padding-bottom: 0.08em; margin-bottom: -0.08em; }
+.line > span { display: block; will-change: transform; }
+
+.lede, .body {
+  font-size: clamp(0.85rem, 1.05vw, 0.98rem);
+  font-weight: 300;
+  color: var(--bone-dim);
+  max-width: 30rem;
+}
+
+.lede { margin: 0 auto; }
+.panel--right .body, .panel--right .lede { margin-left: auto; }
+.panel--center .body { margin-left: auto; margin-right: auto; }
+
+.rule {
+  display: block;
+  width: 56px;
+  height: 1px;
+  background: var(--gold-dim);
+  margin-top: 2.4rem;
+}
+
+/* ---------- Spec list (Calibre section) ---------- */
+.specs {
+  list-style: none;
+  display: flex;
+  gap: clamp(1.5rem, 3.5vw, 3rem);
+  margin-top: 2.2rem;
+}
+
+.specs li { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.spec-num {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 2.6vw, 2.3rem);
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+.spec-label {
+  font-size: 0.58rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--bone-faint);
+}
+
+/* ---------- Scroll hint ---------- */
+.scroll-hint {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 3rem;
+  text-decoration: none;
+  color: var(--bone-dim);
+  font-size: 0.58rem;
+  letter-spacing: 0.4em;
+  text-indent: 0.4em;
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+
+.scroll-hint:hover { color: var(--gold); }
+
+.hint-line {
+  width: 1px;
+  height: 56px;
+  background: rgba(236, 231, 223, 0.15);
+  overflow: hidden;
+  display: block;
+}
+
+.hint-line-inner {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--gold);
+  animation: hint-drop 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes hint-drop {
+  0%   { transform: translateY(-100%); }
+  55%  { transform: translateY(0); }
+  100% { transform: translateY(100%); }
+}
+
+/* ---------- CTA button ---------- */
+.cta-button {
+  margin-top: 2.6rem;
+  padding: 1.15rem 3.2rem;
+  background: transparent;
+  border: 1px solid var(--gold-dim);
+  border-radius: 999px;
+  color: var(--bone);
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  font-weight: 300;
+  letter-spacing: 0.38em;
+  text-indent: 0.38em;
+  text-transform: uppercase;
+  transition: border-color 0.4s ease, background-color 0.4s ease, color 0.4s ease;
+  will-change: transform; /* magnetic effect translates it */
+}
+
+.cta-button:hover {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--ink);
+}
+
+/* ---------- Footer ---------- */
+.site-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 1.75rem var(--gutter);
+  font-size: 0.58rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--bone-faint);
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+@media (max-width: 768px) {
+  .section { align-items: flex-end; padding-bottom: 12vh; }
+  .panel,
+  .panel--left,
+  .panel--right,
+  .panel--center { max-width: 100%; margin: 0; text-align: left; }
+  .panel--center .rule, .panel--right .rule { margin-left: 0; }
+  .lede, .body { max-width: 100%; }
+  #hero.section { align-items: center; }
+  #hero .panel { text-align: left; }
+  #hero .rule { margin-left: 0; }
+  #cta.section { align-items: center; justify-content: center; }
+  #cta .panel { text-align: center; }
+  #cta .cta-button { margin-left: auto; margin-right: auto; }
+  .specs { flex-wrap: wrap; gap: 1.4rem 2rem; }
+  .site-header, .site-footer { font-size: 0.55rem; }
+  .callout-text { font-size: 0.55rem; }
+  .callout-line { width: 26px; }
+}
+
+/* ==========================================================================
+   REDUCED MOTION — kill decorative motion, keep content reachable
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .grain { animation: none; }
+  .hint-line-inner { animation: none; transform: translateY(0); }
+  .cursor-dot, .cursor-ring { display: none; }
+  body, a, button { cursor: auto; }
+}

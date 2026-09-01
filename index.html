@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AURELLE — Calibre 01</title>
+  <meta name="description" content="AURELLE Calibre 01. A haute horlogerie experience. Scroll to disassemble the movement." />
+
+  <!-- Typography: Cormorant Garamond (display) + Inter (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Inter:wght@200;300;400&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="is-loading">
+
+  <!-- ============================================================
+       PRELOADER — covers the screen while fonts/scene warm up.
+       main.js animates the counter 0→100, then lifts it away.
+       ============================================================ -->
+  <div id="preloader" aria-hidden="true">
+    <div class="preloader-inner">
+      <span class="preloader-brand">AURELLE</span>
+      <span class="preloader-count" id="preloaderCount">00</span>
+    </div>
+    <span class="preloader-bar"><span id="preloaderBar"></span></span>
+  </div>
+
+  <!-- ============================================================
+       CUSTOM CURSOR — dot follows instantly, ring lerps behind.
+       Hidden on touch devices via CSS (hover: none).
+       ============================================================ -->
+  <div class="cursor-dot" aria-hidden="true"></div>
+  <div class="cursor-ring" aria-hidden="true">
+    <span class="cursor-label"></span>
+  </div>
+
+  <!-- Fixed WebGL canvas, sits behind all content -->
+  <canvas id="webgl"></canvas>
+
+  <!-- Atmosphere layers (purely decorative) -->
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- ============================================================
+       EXPLODED-VIEW CALLOUTS — positioned every frame by main.js
+       (3D part positions projected to 2D screen coordinates).
+       Visibility is driven by the explosion ScrollTrigger.
+       ============================================================ -->
+  <div id="callouts" aria-hidden="true">
+    <div class="callout callout--left"  data-callout="bezel">
+      <span class="callout-text">Sapphire bezel</span><span class="callout-line"></span>
+    </div>
+    <div class="callout callout--right" data-callout="crown">
+      <span class="callout-line"></span><span class="callout-text">Screw-down crown</span>
+    </div>
+    <div class="callout callout--left"  data-callout="movement">
+      <span class="callout-text">Calibre 01 movement</span><span class="callout-line"></span>
+    </div>
+    <div class="callout callout--right" data-callout="hands">
+      <span class="callout-line"></span><span class="callout-text">Dauphine hands</span>
+    </div>
+  </div>
+
+  <!-- Fixed header, blends with whatever is behind it -->
+  <header class="site-header">
+    <span class="header-brand">AURELLE</span>
+    <span class="header-right">Genève — Est. 1898</span>
+  </header>
+
+  <main id="scroll-root">
+
+    <!-- ================= SECTION 1 · HERO (0 → 100vh) ================= -->
+    <section id="hero" class="section">
+      <div class="panel panel--center">
+        <p class="eyebrow reveal-fade">Haute Horlogerie — N° 01</p>
+        <h1 class="display display--hero">
+          <span class="line"><span>Time,</span></span>
+          <span class="line"><span><em>Perfected.</em></span></span>
+        </h1>
+        <p class="lede reveal-fade">One calibre. Two hundred hours of hand-finishing.<br />Scroll, and take it apart.</p>
+        <a href="#precision" class="scroll-hint reveal-fade" data-cursor="Scroll">
+          <span class="hint-label">Scroll</span>
+          <span class="hint-line"><span class="hint-line-inner"></span></span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ================= SECTION 2 · PRECISION (100 → 200vh) ================= -->
+    <section id="precision" class="section">
+      <div class="panel panel--right">
+        <p class="section-index reveal-fade">01</p>
+        <p class="eyebrow reveal-fade">Precision</p>
+        <h2 class="display">
+          <span class="line"><span>Within two</span></span>
+          <span class="line"><span>seconds a day.</span></span>
+        </h2>
+        <p class="body reveal-fade">
+          Every Calibre 01 is regulated in six positions over twenty-one days before
+          it leaves the atelier. Not because a certificate demands it — because the
+          person wearing it will never check. We will.
+        </p>
+        <span class="rule reveal-fade"></span>
+      </div>
+    </section>
+
+    <!-- ================= SECTION 3 · CRAFT (200 → 300vh) ================= -->
+    <section id="craft" class="section">
+      <div class="panel panel--left">
+        <p class="section-index reveal-fade">02</p>
+        <p class="eyebrow reveal-fade">Craft</p>
+        <h2 class="display">
+          <span class="line"><span>Finished for</span></span>
+          <span class="line"><span>no one to see.</span></span>
+        </h2>
+        <p class="body reveal-fade">
+          Anglage, black polish, Côtes de Genève — applied to surfaces hidden
+          beneath the caseback. The camera has moved closer. Look at the dial:
+          each index is set by hand, under a loupe, twice.
+        </p>
+        <span class="rule reveal-fade"></span>
+      </div>
+    </section>
+
+    <!-- ================= SECTION 4 · CALIBRE 01 / EXPLODED VIEW =================
+         This section is 300vh tall; its panel is sticky. The extra 200vh of
+         scroll is the timeline that disassembles the watch (see main.js,
+         "EXPLOSION SEQUENCE"). The per-frame callout labels float in the
+         fixed #callouts layer above. -->
+    <section id="calibre" class="section section--tall">
+      <div class="panel panel--sticky panel--left">
+        <p class="section-index reveal-fade">03</p>
+        <p class="eyebrow reveal-fade">Calibre 01</p>
+        <h2 class="display">
+          <span class="line"><span>Anatomy of</span></span>
+          <span class="line"><span>a movement.</span></span>
+        </h2>
+        <p class="body reveal-fade">
+          Keep scrolling. The case opens, the crown unscrews, and every
+          component of Calibre 01 presents itself.
+        </p>
+        <ul class="specs">
+          <li class="reveal-fade">
+            <span class="spec-num" data-count="72" data-suffix="h">0</span>
+            <span class="spec-label">Power reserve</span>
+          </li>
+          <li class="reveal-fade">
+            <span class="spec-num" data-count="21600" data-group="1">0</span>
+            <span class="spec-label">Vibrations / hour</span>
+          </li>
+          <li class="reveal-fade">
+            <span class="spec-num" data-count="38.5" data-decimals="1" data-suffix=" mm">0</span>
+            <span class="spec-label">Case diameter</span>
+          </li>
+        </ul>
+        <span class="rule reveal-fade"></span>
+      </div>
+    </section>
+
+    <!-- ================= SECTION 5 · CTA (final 100vh) ================= -->
+    <section id="cta" class="section">
+      <div class="panel panel--center">
+        <p class="eyebrow reveal-fade">Allocation MMXXVI</p>
+        <h2 class="display">
+          <span class="line"><span>The waiting list</span></span>
+          <span class="line"><span><em>opens in spring.</em></span></span>
+        </h2>
+        <button class="cta-button magnetic reveal-fade" type="button" data-cursor="Enquire">
+          <span class="cta-button-text">Request an allocation</span>
+        </button>
+      </div>
+      <footer class="site-footer">
+        <span>© MMXXVI Aurelle Horlogerie</span>
+        <span>A scroll-driven study in Three.js &amp; GSAP</span>
+      </footer>
+    </section>
+
+  </main>
+
+  <!-- Libraries (CDN, pinned) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.152.2/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>

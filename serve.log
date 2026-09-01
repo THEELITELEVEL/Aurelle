@@ -1,0 +1,15 @@
+ INFO  Accepting connections at http://localhost:5173
+ HTTP  8/30/2026 2:25:44 PM ::1 GET /
+ HTTP  8/30/2026 2:25:44 PM ::1 Returned 200 in 13 ms
+ HTTP  8/30/2026 2:25:44 PM ::1 GET /style.css
+ HTTP  8/30/2026 2:25:44 PM ::1 Returned 200 in 2 ms
+ HTTP  8/30/2026 2:25:44 PM ::1 GET /main.js
+ HTTP  8/30/2026 2:25:44 PM ::1 Returned 200 in 2 ms
+ HTTP  8/30/2026 2:33:26 PM ::1 GET /
+ HTTP  8/30/2026 2:33:26 PM ::1 Returned 200 in 3 ms
+ HTTP  8/30/2026 2:33:26 PM ::1 GET /style.css
+ HTTP  8/30/2026 2:33:26 PM ::1 GET /main.js
+ HTTP  8/30/2026 2:33:26 PM ::1 Returned 200 in 2 ms
+ HTTP  8/30/2026 2:33:26 PM ::1 Returned 200 in 2 ms
+ HTTP  8/30/2026 2:33:30 PM ::1 GET /favicon.ico
+ HTTP  8/30/2026 2:33:30 PM ::1 Returned 200 in 3 ms
